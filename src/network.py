@@ -9,12 +9,13 @@ simple, easily readable, and easily modifiable.  It is not optimized,
 and omits many desirable features.
 """
 
-#### Libraries
+# Libraries
 # Standard library
 import random
 
 # Third-party libraries
 import numpy as np
+
 
 class Network(object):
 
@@ -51,7 +52,9 @@ class Network(object):
         network will be evaluated against the test data after each
         epoch, and partial progress printed out.  This is useful for
         tracking progress, but slows things down substantially."""
-        if test_data: n_test = len(test_data)
+        n_test = 0
+        if test_data:
+            n_test = len(test_data)
         n = len(training_data)
         for j in xrange(epochs):
             random.shuffle(training_data)
@@ -91,8 +94,8 @@ class Network(object):
         nabla_w = [np.zeros(w.shape) for w in self.weights]
         # feedforward
         activation = x
-        activations = [x] # list to store all the activations, layer by layer
-        zs = [] # list to store all the z vectors, layer by layer
+        activations = [x]  # list to store all the activations, layer by layer
+        zs = []  # list to store all the z vectors, layer by layer
         for b, w in zip(self.biases, self.weights):
             z = np.dot(w, activation)+b
             zs.append(z)
@@ -131,10 +134,12 @@ class Network(object):
         \partial a for the output activations."""
         return (output_activations-y)
 
-#### Miscellaneous functions
+
+# Miscellaneous functions
 def sigmoid(z):
     """The sigmoid function."""
     return 1.0/(1.0+np.exp(-z))
+
 
 def sigmoid_prime(z):
     """Derivative of the sigmoid function."""

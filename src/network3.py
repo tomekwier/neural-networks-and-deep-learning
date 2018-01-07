@@ -30,7 +30,7 @@ versions of Theano.
 
 """
 
-#### Libraries
+# Libraries
 # Standard library
 import cPickle
 import gzip
@@ -51,19 +51,20 @@ from theano.tensor.nnet import sigmoid
 from theano.tensor import tanh
 
 
-#### Constants
+# Constants
 GPU = True
 if GPU:
-    print "Trying to run under a GPU.  If this is not desired, then modify "+\
+    print "Trying to run under a GPU.  If this is not desired, then modify " +\
         "network3.py\nto set the GPU flag to False."
     try: theano.config.device = 'gpu'
     except: pass # it's already set
     theano.config.floatX = 'float32'
 else:
-    print "Running with a CPU.  If this is not desired, then the modify "+\
+    print "Running with a CPU.  If this is not desired, then the modify " +\
         "network3.py to set\nthe GPU flag to True."
 
-#### Load the MNIST data
+
+# Load the MNIST data
 def load_data_shared(filename="../data/mnist.pkl.gz"):
     f = gzip.open(filename, 'rb')
     training_data, validation_data, test_data = cPickle.load(f)
@@ -80,7 +81,8 @@ def load_data_shared(filename="../data/mnist.pkl.gz"):
         return shared_x, T.cast(shared_y, "int32")
     return [shared(training_data), shared(validation_data), shared(test_data)]
 
-#### Main class used to construct and train networks
+
+# Main class used to construct and train networks
 class Network(object):
 
     def __init__(self, layers, mini_batch_size):
@@ -183,7 +185,8 @@ class Network(object):
             best_validation_accuracy, best_iteration))
         print("Corresponding test accuracy of {0:.2%}".format(test_accuracy))
 
-#### Define layer types
+
+# Define layer types
 
 class ConvPoolLayer(object):
     """Used to create a combination of a convolutional and a max-pooling
@@ -210,7 +213,7 @@ class ConvPoolLayer(object):
         self.filter_shape = filter_shape
         self.image_shape = image_shape
         self.poolsize = poolsize
-        self.activation_fn=activation_fn
+        self.activation_fn = activation_fn
         # initialize weights and biases
         n_out = (filter_shape[0]*np.prod(filter_shape[2:])/np.prod(poolsize))
         self.w = theano.shared(
@@ -234,7 +237,8 @@ class ConvPoolLayer(object):
             input=conv_out, ds=self.poolsize, ignore_border=True)
         self.output = self.activation_fn(
             pooled_out + self.b.dimshuffle('x', 0, 'x', 'x'))
-        self.output_dropout = self.output # no dropout in the convolutional layers
+        self.output_dropout = self.output  # no dropout in the convolutional layers
+
 
 class FullyConnectedLayer(object):
 
@@ -270,6 +274,7 @@ class FullyConnectedLayer(object):
         "Return the accuracy for the mini-batch."
         return T.mean(T.eq(y, self.y_out))
 
+
 class SoftmaxLayer(object):
 
     def __init__(self, n_in, n_out, p_dropout=0.0):
@@ -302,10 +307,11 @@ class SoftmaxLayer(object):
         return T.mean(T.eq(y, self.y_out))
 
 
-#### Miscellanea
+# Miscellanea
 def size(data):
     "Return the size of the dataset `data`."
     return data[0].get_value(borrow=True).shape[0]
+
 
 def dropout_layer(layer, p_dropout):
     srng = shared_randomstreams.RandomStreams(
