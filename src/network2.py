@@ -64,10 +64,29 @@ class CrossEntropyCost(object):
         return (a-y)
 
 
+class L2Regularization(object):
+    """
+    TODO: Add documentation
+    """
+    @staticmethod
+    def fn(lmbda, weight, n, eta):
+        return (1-eta*(lmbda/n))*weight
+
+
+class L1Regularization(object):
+    """
+    TODO: Add documentation
+    """
+    @staticmethod
+    def fn(lmbda, weight, n, eta):
+        return weight - eta*(lmbda/n)*np.sign(weight)
+
+
 # Main Network class
 class Network(object):
 
-    def __init__(self, sizes, cost=CrossEntropyCost):
+    def __init__(self, sizes, cost=CrossEntropyCost,
+                 regularization=L2Regularization):
         """The list ``sizes`` contains the number of neurons in the respective
         layers of the network.  For example, if the list was [2, 3, 1]
         then it would be a three-layer network, with the first layer
@@ -75,13 +94,16 @@ class Network(object):
         third layer 1 neuron.  The biases and weights for the network
         are initialized randomly, using
         ``self.default_weight_initializer`` (see docstring for that
-        method).
+        method). The final parameter is regularization type which can be
+        any of L1Regularization or L2Regularization.
+        If not provided L2Regularization is a default.
 
         """
         self.num_layers = len(sizes)
         self.sizes = sizes
         self.default_weight_initializer()
         self.cost = cost
+        self.reg = regularization
 
     def default_weight_initializer(self):
         """Initialize each weight using a Gaussian distribution with mean 0
@@ -202,7 +224,7 @@ class Network(object):
             delta_nabla_b, delta_nabla_w = self.backprop(x, y)
             nabla_b = [nb+dnb for nb, dnb in zip(nabla_b, delta_nabla_b)]
             nabla_w = [nw+dnw for nw, dnw in zip(nabla_w, delta_nabla_w)]
-        self.weights = [(1-eta*(lmbda/n))*w-(eta/len(mini_batch))*nw
+        self.weights = [self.reg.fn(lmbda, w, n, eta)-(eta/len(mini_batch))*nw
                         for w, nw in zip(self.weights, nabla_w)]
         self.biases = [b-(eta/len(mini_batch))*nb
                        for b, nb in zip(self.biases, nabla_b)]

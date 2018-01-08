@@ -1,8 +1,9 @@
-"""
-overfitting
-~~~~~~~~~~~
+"""regularization_types
+~~~~~~~~~~~~
 
-Plot graphs to illustrate the problem of overfitting.
+Plot graphs to illustrate the performance of MNIST when different
+regularization types (specifically L1 and L2 regularization)
+
 """
 
 # Standard library
@@ -19,61 +20,62 @@ import network2
 import matplotlib.pyplot as plt
 import numpy as np
 
-
-def main(filename, num_epochs,
-         training_cost_xmin=200,
-         test_accuracy_xmin=200,
-         test_cost_xmin=0,
-         training_accuracy_xmin=0,
-         training_set_size=1000,
-         lmbda=0.0):
-    """``filename`` is the name of the file where the results will be
-    stored.  ``num_epochs`` is the number of epochs to train for.
-    ``training_set_size`` is the number of images to train on.
-    ``lmbda`` is the regularization parameter.  The other parameters
-    set the epochs at which to start plotting on the x axis.
-    """
-    run_network(filename, num_epochs, training_set_size, lmbda)
-    make_plots(filename, num_epochs,
-               test_accuracy_xmin,
-               training_cost_xmin,
-               test_accuracy_xmin,
-               training_accuracy_xmin,
-               training_set_size)
+TRAINING_SIZE = 10000
+NUM_EPOCHS = 1500000 / TRAINING_SIZE
 
 
-def run_network(filename, num_epochs, training_set_size=1000, lmbda=0.0):
-    """Train the network for ``num_epochs`` on ``training_set_size``
-    images, and store the results in ``filename``.  Those results can
-    later be used by ``make_plots``.  Note that the results are stored
-    to disk in large part because it's convenient not to have to
-    ``run_network`` each time we want to make a plot (it's slow).
+def main():
+    run_networks(TRAINING_SIZE, NUM_EPOCHS)
+    make_plots(TRAINING_SIZE, NUM_EPOCHS)
 
-    """
+
+def run_networks(training_size, num_epochs):
+    run_network(training_size, num_epochs, network2.L1Regularization,
+                "regularization_l1.json")
+    run_network(training_size, num_epochs, network2.L2Regularization,
+                "regularization_l2.json")
+
+
+def run_network(training_size, num_epochs, regularization_type, file_name):
     # Make results more easily reproducible
     random.seed(12345678)
     np.random.seed(12345678)
     training_data, validation_data, test_data = mnist_loader.load_data_wrapper()
-    net = network2.Network([784, 30, 10], cost=network2.CrossEntropyCost())
+    net = network2.Network([784, 30, 10], cost=network2.CrossEntropyCost(),
+                           regularization=regularization_type)
+
+    print "\n\nTraining network with data set size %s" % training_size
     net.large_weight_initializer()
     test_cost, test_accuracy, training_cost, training_accuracy \
-        = net.SGD(training_data[:training_set_size], num_epochs, 10, 0.5,
-                  evaluation_data=test_data, lmbda=lmbda,
+        = net.SGD(training_data[:training_size], num_epochs,
+                  10, 0.5, lmbda=training_size*0.0001,
+                  evaluation_data=test_data,
                   monitor_evaluation_cost=True,
                   monitor_evaluation_accuracy=True,
                   monitor_training_cost=True,
                   monitor_training_accuracy=True)
-    f = open(filename, "w")
+
+    accuracy = net.accuracy(validation_data) / 100.0
+    print "Accuracy on validation data was %s percent" % accuracy
+
+    f = open(file_name, "w")
     json.dump([test_cost, test_accuracy, training_cost, training_accuracy], f)
     f.close()
 
 
-def make_plots(filename, num_epochs,
-               training_cost_xmin=200,
-               test_accuracy_xmin=200,
-               test_cost_xmin=0,
-               training_accuracy_xmin=0,
-               training_set_size=1000):
+def make_plots(training_size, num_epochs):
+    make_a_plot("regularization_l1.json", num_epochs,
+              training_set_size=training_size)
+    make_a_plot("regularization_l2.json", num_epochs,
+                training_set_size=training_size)
+
+
+def make_a_plot(filename, num_epochs,
+                training_cost_xmin=0,
+                test_accuracy_xmin=0,
+                test_cost_xmin=0,
+                training_accuracy_xmin=0,
+                training_set_size=1000):
     """Load the results from ``filename``, and generate the corresponding
     plots. """
     f = open(filename, "r")
@@ -167,21 +169,4 @@ def plot_overlay(test_accuracy, training_accuracy, num_epochs, xmin,
 
 
 if __name__ == "__main__":
-    filename = raw_input("Enter a file name: ")
-    num_epochs = int(raw_input(
-        "Enter the number of epochs to run for: "))
-    training_cost_xmin = int(raw_input(
-        "training_cost_xmin (suggest 200): "))
-    test_accuracy_xmin = int(raw_input(
-        "test_accuracy_xmin (suggest 200): "))
-    test_cost_xmin = int(raw_input(
-        "test_cost_xmin (suggest 0): "))
-    training_accuracy_xmin = int(raw_input(
-        "training_accuracy_xmin (suggest 0): "))
-    training_set_size = int(raw_input(
-        "Training set size (suggest 1000): "))
-    lmbda = float(raw_input(
-        "Enter the regularization parameter, lambda (suggest: 5.0): "))
-    main(filename, num_epochs, training_cost_xmin,
-         test_accuracy_xmin, test_cost_xmin, training_accuracy_xmin,
-         training_set_size, lmbda)
+    main()
