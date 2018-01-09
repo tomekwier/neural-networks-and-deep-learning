@@ -21,11 +21,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 TRAINING_SIZE = 10000
-NUM_EPOCHS = 1500000 / TRAINING_SIZE
+NUM_EPOCHS = 1500000 // TRAINING_SIZE
 
 
 def main():
-    run_networks(TRAINING_SIZE, NUM_EPOCHS)
+    # run_networks(TRAINING_SIZE, NUM_EPOCHS)  
     make_plots(TRAINING_SIZE, NUM_EPOCHS)
 
 
@@ -44,7 +44,7 @@ def run_network(training_size, num_epochs, regularization_type, file_name):
     net = network2.Network([784, 30, 10], cost=network2.CrossEntropyCost(),
                            regularization=regularization_type)
 
-    print "\n\nTraining network with data set size %s" % training_size
+    print("\n\nTraining network with data set size %s" % (training_size))
     net.large_weight_initializer()
     test_cost, test_accuracy, training_cost, training_accuracy \
         = net.SGD(training_data[:training_size], num_epochs,
@@ -56,7 +56,7 @@ def run_network(training_size, num_epochs, regularization_type, file_name):
                   monitor_training_accuracy=True)
 
     accuracy = net.accuracy(validation_data) / 100.0
-    print "Accuracy on validation data was %s percent" % accuracy
+    print("Accuracy on validation data was %s percent" % accuracy)
 
     f = open(file_name, "w")
     json.dump([test_cost, test_accuracy, training_cost, training_accuracy], f)
