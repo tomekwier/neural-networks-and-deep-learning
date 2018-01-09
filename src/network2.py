@@ -82,6 +82,15 @@ class L1Regularization(object):
         return weight - eta*(lmbda/n)*np.sign(weight)
 
 
+class NoRegulrarization(object):
+    """
+    TODO: Add documentation
+    """
+    @staticmethod
+    def fn(lmbda, weight, n, eta):
+        return weight
+
+
 # Main Network class
 class Network(object):
 
@@ -179,11 +188,11 @@ class Network(object):
         n = len(training_data)
         evaluation_cost, evaluation_accuracy = [], []
         training_cost, training_accuracy = [], []
-        for j in xrange(epochs):
+        for j in range(epochs):
             random.shuffle(training_data)
             mini_batches = [
                 training_data[k:k+mini_batch_size]
-                for k in xrange(0, n, mini_batch_size)]
+                for k in range(0, n, mini_batch_size)]
             for mini_batch in mini_batches:
                 self.update_mini_batch(
                     mini_batch, eta, lmbda, len(training_data))
@@ -255,7 +264,7 @@ class Network(object):
         # second-last layer, and so on.  It's a renumbering of the
         # scheme in the book, used here to take advantage of the fact
         # that Python can use negative indices in lists.
-        for l in xrange(2, self.num_layers):
+        for l in range(2, self.num_layers):
             z = zs[-l]
             sp = sigmoid_prime(z)
             delta = np.dot(self.weights[-l+1].transpose(), delta) * sp

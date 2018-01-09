@@ -25,7 +25,7 @@ NUM_EPOCHS = 1500000 // TRAINING_SIZE
 
 
 def main():
-    # run_networks(TRAINING_SIZE, NUM_EPOCHS)  
+    run_networks(TRAINING_SIZE, NUM_EPOCHS)
     make_plots(TRAINING_SIZE, NUM_EPOCHS)
 
 
@@ -34,6 +34,8 @@ def run_networks(training_size, num_epochs):
                 "regularization_l1.json")
     run_network(training_size, num_epochs, network2.L2Regularization,
                 "regularization_l2.json")
+    run_network(training_size, num_epochs, network2.NoRegulrarization,
+                "regularization_no.json")
 
 
 def run_network(training_size, num_epochs, regularization_type, file_name):
@@ -46,6 +48,7 @@ def run_network(training_size, num_epochs, regularization_type, file_name):
 
     print("\n\nTraining network with data set size %s" % (training_size))
     net.large_weight_initializer()
+
     test_cost, test_accuracy, training_cost, training_accuracy \
         = net.SGD(training_data[:training_size], num_epochs,
                   10, 0.5, lmbda=training_size*0.0001,
@@ -64,10 +67,50 @@ def run_network(training_size, num_epochs, regularization_type, file_name):
 
 
 def make_plots(training_size, num_epochs):
-    make_a_plot("regularization_l1.json", num_epochs,
-              training_set_size=training_size)
-    make_a_plot("regularization_l2.json", num_epochs,
-                training_set_size=training_size)
+    # make_a_plot("regularization_l1.json", num_epochs,
+    #             training_set_size=training_size)
+    # make_a_plot("regularization_l2.json", num_epochs,
+    #             training_set_size=training_size)
+    make_combined_plot(["regularization_l1.json",
+                        "regularization_l2.json",
+                        "regularization_no.json"], num_epochs,
+                       training_set_size=training_size)
+
+
+def make_combined_plot(filenames, num_epochs,
+                       training_cost_xmin=0,
+                       test_accuracy_xmin=0,
+                       test_cost_xmin=0,
+                       training_accuracy_xmin=0,
+                       training_set_size=1000):
+    data = []
+    for file in filenames:
+        f = open(file, "r")
+        data.append(json.load(f))
+        f.close()
+    # Plot data points
+    plot_test_accuracy_overlay(data, num_epochs,
+                               test_accuracy_xmin,
+                               training_set_size)
+
+
+def plot_test_accuracy_overlay(data, num_epochs, xmin, training_set_size):
+    fig = plt.figure()
+    colors = ['#2A6EA6', '#FFA933', '#FFC133']
+    labels = ['L1 accuracy (test)', 'L2 accuracy (test)',
+              'No regularization accuracy (test)']
+    ax = fig.add_subplot(111)
+    for i, point in enumerate(data):
+        ax.plot(np.arange(xmin, num_epochs),
+                [accuracy/100.0 for accuracy in data[i][1]],
+                color=colors[i],
+                label=labels[i])
+    ax.grid(True)
+    ax.set_xlim([xmin, num_epochs])
+    ax.set_xlabel('Epoch')
+    ax.set_ylim([90, 100])
+    plt.legend(loc="lower right")
+    plt.show()
 
 
 def make_a_plot(filename, num_epochs,
