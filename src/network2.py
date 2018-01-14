@@ -66,7 +66,8 @@ class CrossEntropyCost(object):
 
 class L2Regularization(object):
     """
-    TODO: Add documentation
+    Return neuron weight scaled by L2 regularization. L2 regularization has
+    no effect when ``lmbda`` is zero.
     """
     @staticmethod
     def fn(lmbda, weight, n, eta):
@@ -75,7 +76,8 @@ class L2Regularization(object):
 
 class L1Regularization(object):
     """
-    TODO: Add documentation
+    Return neuron weight scaled by L1 regularization. L1 regularization has
+    no effect when ``lmbda`` is zero.
     """
     @staticmethod
     def fn(lmbda, weight, n, eta):
@@ -84,7 +86,7 @@ class L1Regularization(object):
 
 class NoRegulrarization(object):
     """
-    TODO: Add documentation
+    An identity function. Simulate no regularization.
     """
     @staticmethod
     def fn(lmbda, weight, n, eta):
@@ -94,7 +96,7 @@ class NoRegulrarization(object):
 # Main Network class
 class Network(object):
 
-    def __init__(self, sizes, cost=CrossEntropyCost,
+    def __init__(self, sizes, cost=CrossEntropyCost, friction=0.,
                  regularization=L2Regularization):
         """The list ``sizes`` contains the number of neurons in the respective
         layers of the network.  For example, if the list was [2, 3, 1]
@@ -103,9 +105,10 @@ class Network(object):
         third layer 1 neuron.  The biases and weights for the network
         are initialized randomly, using
         ``self.default_weight_initializer`` (see docstring for that
-        method). The final parameter is regularization type which can be
-        any of L1Regularization or L2Regularization.
-        If not provided L2Regularization is a default.
+        method). `fricition`` is a friction coefficient for momentum
+        based SGD. The final parameter is regularization type which can be
+        any of L1Regularization, L2Regularization or NoRegularization.
+        If not set L2Regularization is a default.
 
         """
         self.num_layers = len(sizes)
@@ -113,6 +116,7 @@ class Network(object):
         self.default_weight_initializer()
         self.cost = cost
         self.reg = regularization
+        self.friction = friction
 
     def default_weight_initializer(self):
         """Initialize each weight using a Gaussian distribution with mean 0
